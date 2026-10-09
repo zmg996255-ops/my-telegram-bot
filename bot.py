@@ -22,7 +22,7 @@ from telegram import Bot
 from telegram.error import TelegramError
 
 # --- သင့် BOT TOKEN နဲ့ CHANNEL ID ---
-BOT_TOKEN = "8962054022:AAFfTE43NRJKa7Wv8IYq9xvz29roLUZ"
+BOT_TOKEN = "8962054022:AAFfTE43NRJKa7Wv8IYq9xvz29rolUZQOI8"
 CHAT_ID = "@flashtrx77"
 
 
