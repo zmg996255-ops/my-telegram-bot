@@ -24,7 +24,7 @@ def keep_alive():
 keep_alive()
 
 # --- 2. BOT & API SETTINGS ---
-BOT_TOKEN = "8962054022:AAFfTE43NRJKa7Wv8IYq9xvz29rolUZQOI8"  # မိမိ Bot Token အပြည့်အစုံ ထည့်ပါ
+BOT_TOKEN = "8733739376:AAH_5EuSlZvo5o2i5LD2_5EdLEUd-VEOXQ8"  # မိမိ Bot Token အပြည့်အစုံ ထည့်ပါ
 CHAT_ID = "@flashtrx77"
 
 API_URL = "https://draw.ar-lottery01.com/TrxWinGo/TrxWinGo_1M/GetHistoryIssuePage.json"
