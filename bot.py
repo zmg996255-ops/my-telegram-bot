@@ -25,7 +25,7 @@ def keep_alive():
 # --- 2. BOT & API SETTINGS ---
 # Environment Variable မှယူမည်၊ မရှိပါက ပေးထားသော Token ကို သုံးမည်
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '8936154774:AAGyk5043s6YjZSjvesd9kmiAx-05T-TNhQ')
-CHAT_ID = "@flashtrx77"
+CHAT_ID = "@flashtrx7"
 
 API_URL = "https://draw.ar-lottery01.com/TrxWinGo/TrxWinGo_1M/GetHistoryIssuePage.json"
 HEADERS = {
