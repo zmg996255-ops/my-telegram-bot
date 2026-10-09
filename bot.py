@@ -7,24 +7,24 @@ from threading import Thread
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# --- 1. Flask Server (Keep-Alive) ---
+# --- 1. Flask Server (Keep-Alive for Render) ---
 app = Flask('')
 
 @app.route('/')
 def home():
-    return "Bot is running with Real-time Game API!"
+    return "Bot is running perfectly!"
 
 def run():
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
 
 def keep_alive():
-    t = Thread(target=run)
+    t = Thread(target=run, daemon=True)
     t.start()
 
-keep_alive()
-
 # --- 2. BOT & API SETTINGS ---
-BOT_TOKEN = "8733739376:AAH_5EuSlZvo5o2i5LD2_5EdLEUd-VEOXQ8"  # မိမိ Bot Token အပြည့်အစုံ ထည့်ပါ
+# Environment Variable မှယူမည်၊ မရှိပါက ပေးထားသော Token ကို သုံးမည်
+BOT_TOKEN = os.environ.get('BOT_TOKEN', '8936154774:AAGyk5043s6YjZSjvesd9kmiAx-05T-TNhQ')
 CHAT_ID = "@flashtrx77"
 
 API_URL = "https://draw.ar-lottery01.com/TrxWinGo/TrxWinGo_1M/GetHistoryIssuePage.json"
@@ -33,10 +33,8 @@ HEADERS = {
     "Referer": "https://hgnice.biz"
 }
 
-# လတ်တလော Signal မှတ်တမ်းများကို ယာယီသိမ်းဆည်းထားရန် (Win/Lose စစ်ရန်)
 predictions_history = {}
 
-# Game Site API ထံမှ နောက်ဆုံးထွက် ရလဒ်များ ရယူခြင်း
 def get_latest_game_data():
     try:
         response = requests.get(API_URL, headers=HEADERS, timeout=10)
@@ -74,26 +72,20 @@ async def signal_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("⚠️ Game API ထံမှ Data ရယူ၍ မရသေးပါ။ ခဏစောင့်ပါ။")
 
-# --- 4. AUTO SIGNAL & WIN/LOSE CHECKER LOOP ---
+# --- 4. AUTO SIGNAL LOOP ---
 async def auto_send_signals(application: Application):
     while True:
         try:
             history = get_latest_game_data()
             if history and len(history) > 0:
-                # ၁။ ပြီးခဲ့သော Signal အတွက် Win / Lose စစ်ဆေးခြင်း
                 latest_record = history[0]
                 latest_period = str(latest_record.get("issueNumber"))
                 winning_number = int(latest_record.get("number", 0))
-                
-                # ဂဏန်း ၀-၄ = SMALL ၊ ၅-၉ = BIG
                 actual_result = "BIG 🟢" if winning_number >= 5 else "SMALL 🔴"
 
                 if latest_period in predictions_history:
                     predicted_val = predictions_history[latest_period]
-                    if predicted_val == actual_result:
-                        status_str = f"✅ **RESULT: WIN ({actual_result})** 🟢"
-                    else:
-                        status_str = f"❌ **RESULT: LOSE ({actual_result})** 🔴"
+                    status_str = f"✅ **RESULT: WIN ({actual_result})** 🟢" if predicted_val == actual_result else f"❌ **RESULT: LOSE ({actual_result})** 🔴"
                     
                     result_msg = (
                         f"📊 **TRX 1-MIN RESULT**\n"
@@ -104,7 +96,6 @@ async def auto_send_signals(application: Application):
                     await application.bot.send_message(chat_id=CHAT_ID, text=result_msg, parse_mode="Markdown")
                     del predictions_history[latest_period]
 
-                # ၂။ နောက်ထပ် ပွဲစဉ်အတွက် Signal အသစ် ထုတ်ပေးခြင်း
                 next_period = str(int(latest_period) + 1)
                 new_prediction = random.choice(["BIG 🟢", "SMALL 🔴"])
                 predictions_history[next_period] = new_prediction
@@ -122,24 +113,23 @@ async def auto_send_signals(application: Application):
         except Exception as e:
             print(f"Error in signal loop: {e}")
 
-        # ၁ မိနစ် (၆၀ စက္ကန့်) အကြာမှ နောက်တစ်ကြိမ် ထပ်မံစစ်ဆေးမည်
         await asyncio.sleep(60)
 
-# --- 5. MAIN FUNCTION ---
-async def main():
-    application = Application.builder().token(BOT_TOKEN).build()
+# --- 5. MAIN BOT RUNNER ---
+async def post_init(application: Application):
+    asyncio.create_task(auto_send_signals(application))
+
+def main():
+    keep_alive()  # Web server စတင်ခြင်း
+
+    application = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("signal", signal_command))
 
-    await application.initialize()
-    await application.start()
-
-    asyncio.create_task(auto_send_signals(application))
-
-    await application.updater.start_polling()
-    await asyncio.Event().wait()
+    # Standard Synchronous Polling
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
