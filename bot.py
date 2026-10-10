@@ -23,8 +23,7 @@ def keep_alive():
     t.start()
 
 # --- 2. BOT & API SETTINGS ---
-# Environment Variable မှယူမည်၊ မရှိပါက ပေးထားသော Token ကို သုံးမည်
-BOT_TOKEN = os.environ.get('BOT_TOKEN', '8936154774:AAGyk5043s6YjZSjvesd9kmiAx-05T-TNhQ')
+BOT_TOKEN = "8936154774:AAGyk5043s6YjZSjvesd9kmiAx-05T-TNhQ"
 CHAT_ID = "@flashtrx7"
 
 API_URL = "https://draw.ar-lottery01.com/TrxWinGo/TrxWinGo_1M/GetHistoryIssuePage.json"
@@ -120,7 +119,7 @@ async def post_init(application: Application):
     asyncio.create_task(auto_send_signals(application))
 
 def main():
-    keep_alive()  # Web server စတင်ခြင်း
+    keep_alive()
 
     application = Application.builder().token(BOT_TOKEN).post_init(post_init).build()
 
@@ -128,7 +127,6 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("signal", signal_command))
 
-    # Standard Synchronous Polling
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
